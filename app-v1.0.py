@@ -11,7 +11,7 @@ def preprocess_dataset(df):
 
 def summarize_dataset(df):
     # Create a summary of the dataset for initial insights
-    summary = f"Dataset Summary:\n- Number of Rows: {len(df)}\n- Number of Columns: {len(df.columns)}"
+    summary = f"- Number of Rows: {len(df)}\n- Number of Columns: {len(df.columns)}"
     return summary
 
 st.title('Data Visualization Chatting Bot')
@@ -28,8 +28,17 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     df = preprocess_dataset(df)
+    dataset_summary = summarize_dataset(df) # Summarize after preprocessing
+    
+    if 'initiated' not in st.session_state or not st.session_state['initiated']:
+        dataset_ready_message = f"The dataset has been uploaded and is ready for analysis. The summary information is {dataset_summary}.\nThe file name is {uploaded_file.name}.\nWe can proceed with data visualizations."
+        st.session_state['initiated'] = True
+        st.session_state["messages"].append({"role": "system", "content": dataset_ready_message})
+    
     st.write("Data Preview:")
     st.dataframe(df.head(5))
+else:
+    st.session_state['initiated'] = False
 
 # Initialize chat messages in session state if not already present
 if "messages" not in st.session_state:
@@ -41,8 +50,7 @@ for msg in st.session_state["messages"]:
 
 # User inputs a request
 prompt = st.chat_input()
-system_message = "You are an expert in writing code and analyzing data. You will answer questions and provide images for data visualization based on user needs. Python is used by default." + summarize_dataset(df)
-
+system_message = f"You are an expert in writing code and analyzing data. You will answer questions and provide images for data visualization based on user needs. Python is used by default. The summary information is {dataset_summary}. The file path is {uploaded_file.name}. The code you create should use this path to read the file."
 if prompt:
     if not openai_api_key:
         st.info("Please add your OpenAI API key to continue.")
