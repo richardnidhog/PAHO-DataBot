@@ -33,27 +33,15 @@ if uploaded_file is not None:
 
 # Initialize chat messages in session state if not already present
 if "messages" not in st.session_state:
-    st.session_state["messages"] = []
+    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you with your data?"}]
 
-# Flag to indicate if the interaction with the program has been initiated
-if 'initiated' not in st.session_state:
-    st.session_state['initiated'] = False
-
-# On the first user interaction, include the dataset summary as the initial message
-if not st.session_state['initiated']:
-    dataset_summary = summarize_dataset(df)
-    initial_message = "How can I help you with your data?"
-    
-    # Assuming you want to show both an initial greeting and the dataset summary
-    st.session_state["messages"].append({"role": "assistant", "content": initial_message})
-    st.session_state["messages"].append({"role": "assistant", "content": dataset_summary})
-    
-    # Set the 'initiated' flag to True to indicate the start of the interaction and
-    # prevent repeating the initial dataset summary in subsequent interactions
-    st.session_state['initiated'] = True
+# Display chat history
+for msg in st.session_state["messages"]:
+    st.chat_message(msg["role"]).write(msg["content"])
 
 # User inputs a request
 prompt = st.chat_input()
+system_message = "You are an expert in writing code and analyzing data. You will answer questions and provide images for data visualization based on user needs. Python is used by default." + summarize_dataset(df)
 
 if prompt:
     if not openai_api_key:
@@ -65,7 +53,7 @@ if prompt:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo-0125",
             messages=[
-                {"role": "system", "content": "You are an expert in writing code and analyzing data. You will answer questions and provide images for data visualization based on user needs. Python is used by default."},
+                {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt}
             ],
         )
