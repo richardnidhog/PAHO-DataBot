@@ -3,12 +3,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from openai import OpenAI
 
+def preprocess_dataset(df):
+    # Example preprocessing logic
+    df.dropna(inplace=True)
+    # Additional preprocessing steps here as needed (data cleaning, feature selection, etc.)
+    return df
+
+def summarize_dataset(df):
+    # Create a summary of the dataset for initial insights
+    summary = f"Dataset Summary:\n- Number of Rows: {len(df)}\n- Number of Columns: {len(df.columns)}"
+    return summary
+
 st.title('Data Visualization Chatting Bot')
 
 # Sidebar configuration for OpenAI API Key
 with st.sidebar:
     openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
-
 
 st.caption("Upload your CSV data and ask me to visualize it for you!")
 
@@ -17,16 +27,30 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
+    df = preprocess_dataset(df)
     st.write("Data Preview:")
     st.dataframe(df.head(5))
 
 # Initialize chat messages in session state if not already present
 if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you with your data?"}]
+    st.session_state["messages"] = []
 
-# Display chat history
-for msg in st.session_state["messages"]:
-    st.chat_message(msg["role"]).write(msg["content"])
+# Flag to indicate if the interaction with the program has been initiated
+if 'initiated' not in st.session_state:
+    st.session_state['initiated'] = False
+
+# On the first user interaction, include the dataset summary as the initial message
+if not st.session_state['initiated']:
+    dataset_summary = summarize_dataset(df)
+    initial_message = "How can I help you with your data?"
+    
+    # Assuming you want to show both an initial greeting and the dataset summary
+    st.session_state["messages"].append({"role": "assistant", "content": initial_message})
+    st.session_state["messages"].append({"role": "assistant", "content": dataset_summary})
+    
+    # Set the 'initiated' flag to True to indicate the start of the interaction and
+    # prevent repeating the initial dataset summary in subsequent interactions
+    st.session_state['initiated'] = True
 
 # User inputs a request
 prompt = st.chat_input()
