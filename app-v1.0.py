@@ -17,7 +17,7 @@ def summarize_dataset(df):
 def query_openai_for_visualization_goal(button_title,dataset_summary,columns_list):
     prompt = f"Given a dataset and a request to {button_title}, create a visualization that best represents the data. You do not have to actually try to read this dataset, just providing the Python code for displaying in Streamlit that theoretically accomplishes the task. \
             The dataset is summarized as follows: {dataset_summary}. Data columns include: {columns_list}. \
-             Directly use 'data' as the variable name of the dataset without additional settings. Provide only the code, do not provide any descriptions or explanations."
+             Never try to read csv file, and always set 'df = data'. Provide only the code, do not provide any descriptions or explanations."
     
     client = OpenAI(api_key=openai_api_key)
     response = client.chat.completions.create(
