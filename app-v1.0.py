@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from openai import OpenAI
+import seaborn as sns
 
 def preprocess_dataset(df):
     df.dropna(inplace=True)
@@ -13,9 +14,10 @@ def summarize_dataset(df):
     return summary
     pass
 
-def query_openai_for_visualization_goal(button_title,dataset_summary):
-    prompt = f"Given a dataset and a request to {button_title}, create a visualization that best represents the data. You do not have to actually try to read this dataset, just provide code that theoretically accomplishes the task. \
-            The dataset is summarized as follows: {dataset_summary}. Set the variable name of the dataset to 'data'. Provide only the code, do not provide any descriptions or explanations."
+def query_openai_for_visualization_goal(button_title,dataset_summary,columns_list):
+    prompt = f"Given a dataset and a request to {button_title}, create a visualization that best represents the data. You do not have to actually try to read this dataset, just providing the Python code for displaying in Streamlit that theoretically accomplishes the task. \
+            The dataset is summarized as follows: {dataset_summary}. Data columns include: {columns_list}. \
+             Directly use 'data' as the variable name of the dataset without additional settings. Provide only the code, do not provide any descriptions or explanations."
     
     client = OpenAI(api_key=openai_api_key)
     response = client.chat.completions.create(
@@ -51,6 +53,7 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     df = preprocess_dataset(df)
     dataset_summary = summarize_dataset(df) # Summarize after preprocessing
+    columns_list = list(df.columns)
     system_message = f"You are an expert in writing code and analyzing data. You will answer questions and provide images for data visualization based on user needs. Python is used by default. The summary information is {dataset_summary}. The file path is {uploaded_file.name}. The code you create should use this path to read the file."
     
     if 'initiated' not in st.session_state or not st.session_state['initiated']:
@@ -65,18 +68,19 @@ if uploaded_file is not None:
 
     if st.button('Visualize Column Distributions'):
         data = df
-        goal = query_openai_for_visualization_goal('Visualize Column Distributions',dataset_summary)
+        goal = query_openai_for_visualization_goal('Visualize Column Distributions',dataset_summary,columns_list)
         st.code(goal, language='python')
         goal_code = goal.replace("```python", "").replace("```", "").strip()
         exec(goal_code, globals(), locals())
 
     if st.button('Visualize Correlations'):
         data = df
-        goal = query_openai_for_visualization_goal('Visualize Correlations',dataset_summary)
+        goal = query_openai_for_visualization_goal('Visualize Correlations',dataset_summary,columns_list)
         st.code(goal, language='python')
         goal_code = goal.replace("```python", "").replace("```", "").strip()
         exec(goal_code, globals(), locals())
         
+
 else:
     st.session_state['initiated'] = False
 
