@@ -66,17 +66,17 @@ if uploaded_file is not None:
 
     st.write("Guess what you want:")
 
-    if st.button('Visualize Column Distributions'):
+    if st.button('Trend Analysis (the trend in mortality over the years for Colombia)'):
         data = df
-        goal = query_openai_for_visualization_goal('Visualize Column Distributions',dataset_summary,columns_list)
-        st.code(goal, language='python')
+        goal = query_openai_for_visualization_goal('Trend Analysis (the trend in mortality over the years for Colombia)',dataset_summary,columns_list)
+        #st.code(goal, language='python')
         goal_code = goal.replace("```python", "").replace("```", "").strip()
         exec(goal_code, globals(), locals())
 
-    if st.button('Visualize Correlations'):
+    if st.button('Gender Analysis (mortality by gender)'):
         data = df
-        goal = query_openai_for_visualization_goal('Visualize Correlations',dataset_summary,columns_list)
-        st.code(goal, language='python')
+        goal = query_openai_for_visualization_goal('Gender Analysis (mortality by gender)',dataset_summary,columns_list)
+        #st.code(goal, language='python')
         goal_code = goal.replace("```python", "").replace("```", "").strip()
         exec(goal_code, globals(), locals())
         
